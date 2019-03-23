@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ReadModel {
@@ -41,11 +42,13 @@ public class ReadModel {
         CreateTrustManager.trustManager();
 
 // And as before now you can use URL and URLConnection
+
         URL url = new URL("https://elxkoom6p4.execute-api.eu-central-1.amazonaws.com/prod/engine-rest/" +
                 "process-definition/key/invoice/xml");
         InputStream stream = url.openStream();
-        System.out.println(stream.toString());
+
 // .. then download the file
+
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         InputStream is = conn.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
@@ -56,7 +59,8 @@ public class ReadModel {
         while ((inputLine = br.readLine()) != null) {
             JSONObject obj = new JSONObject(inputLine);
             jsonObg = obj.getString("bpmn20Xml");
-            System.out.println("json " + jsonObg);
+            //print json
+         //   System.out.println("json " + jsonObg);
         }
         // Create a DocumentBuilder
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -84,8 +88,6 @@ public class ReadModel {
     }
 
     public static ArrayList<String> stepsId = new ArrayList<>();
-    public static int copy;
-
     public static void recursion(Element found) {
         List<String> idTofind = nextStep(found);
 
@@ -93,15 +95,16 @@ public class ReadModel {
             stepsId.add(found.getAttribute("id"));
         }
 
-        if (idTofind.size() == 0) {
-            //System.out.println("StepID : " + stepsId + "; Copy ID: " + copy);
-            //for (int k = stepsId.size() - 1; k > copy; k--){
-            //   stepsId.remove(k)  ;
-            //}
-            //System.out.println("StepID 2: " + stepsId);
+        if (idTofind.size() == 0 && !found.getAttribute("id").equals(stop)) {
+            do {
+                stepsId.remove(stepsId.size() - 1);
+                returnElements.clear();
+                findById(list, stepsId.get(stepsId.size() - 1));}
+                while (nextStep(returnElements.get(0)).size() < 2);
+
         }
 
-        for (int i = 0; i < idTofind.size(); i++) {
+        for (int i = idTofind.size() - 1; i >= 0; i--) {
             returnElements.clear();
             if (idTofind.get(i).equals(stop)) {
                 stepsId.add(idTofind.get(i));
@@ -116,10 +119,7 @@ public class ReadModel {
                     System.out.println("Element " + idTofind.get(i) + "wasn't found");
                 }
             } else {
-                stepsId.add(idTofind.get(i));
-                copy = stepsId.indexOf(idTofind.get(i));
-                System.out.println("Copy " + copy);
-
+             //   stepsId.add(idTofind.get(i));
             }
         }
     }
@@ -131,15 +131,11 @@ public class ReadModel {
             NodeList children = found.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 if (children.item(i).getNodeName().equals("outgoing")) {
-                    //                  System.out.println(" Node Name: " + found.getNodeName() + "; id: " + found.getAttribute("id")
-                    //                         + "; outgoing: " + children.item(i).getTextContent());
                     nextStep.add(children.item(i).getTextContent());
                 }
             }
         } else if (found.getNodeName().equals("sequenceFlow") && getTargetRef(found).length() > 0) {
             nextStep.add(getTargetRef(found));
-            //     System.out.println(" Node Name: " + found.getNodeName() + "; id: " + found.getAttribute("id")
-            //              + "; TargetRef: " + getTargetRef(found));
         }
         return nextStep;
     }

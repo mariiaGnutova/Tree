@@ -10,11 +10,8 @@ public class DemoApplication {
 
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 
-		//SpringApplication.run(DemoApplication.class, args);
 		String start = "approveInvoice";
 		String stop = "invoiceProcessed";
-		//String start = "sequenceFlow_180";
-		//String stop = "invoiceNotProcessed";
 		ReadModel.readModel(start, stop);
 	}
 
