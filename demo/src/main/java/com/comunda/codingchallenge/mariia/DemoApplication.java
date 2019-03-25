@@ -14,7 +14,8 @@ public class DemoApplication {
             String start = args[0];
             String stop = args[1];
 
-            ReadModel.printPathToSystemOut(start, stop);
+            ReadModel readModel = new ReadModel(start, stop);
+            readModel.printPathToSystemOut();
         } else {
             System.out.println("Wrong arguments");
         }
